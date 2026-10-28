@@ -1,0 +1,3 @@
+# 3917JR / gaea —— 系统侧属性（数值取自原厂 getprop 实测，2026-10-17）
+ro.sf.lcd_density=480
+ro.hardware.vulkan=adreno

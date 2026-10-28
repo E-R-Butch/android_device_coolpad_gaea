@@ -1,0 +1,3 @@
+# 3917JR / gaea —— vendor 侧补充属性
+# 说明：绝大部分 vendor 属性由原厂 vendor 分区自带（我们保留原厂 vendor），
+# 这里只放构建期必须由 ROM 侧提供的少量项，避免与 stock vendor 冲突。

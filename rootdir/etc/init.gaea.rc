@@ -1,0 +1,5 @@
+# 3917JR / gaea 设备专用 init（占位）
+# 原厂的 /vendor/etc/init/hw/init.target.rc 已随 blobs 一起保留（含
+# goodix 数据目录、HBM 节点属主等），此文件只放 ROM 侧新增动作。
+on late-init
+    # TODO: 按开机日志补充
