@@ -6,6 +6,13 @@
 
 DEVICE_PATH := device/coolpad/gaea
 
+# ------------------------------------------------------------------ A13 与 A10 vendor 共存
+# 设备出厂 API 是 29（实测 ro.product.first_api_level=29），必须如实声明：
+# 系统侧据此走 legacy vendor 兼容路径，而不是按 A13 的新要求去要求原厂 vendor。
+PRODUCT_SHIPPING_API_LEVEL := 29
+# 原厂 vendor 是 VNDK 29，系统侧必须同时产出 VNDK 29 快照给 vendor 链接。
+PRODUCT_EXTRA_VNDK_VERSIONS := 29
+
 # ------------------------------------------------------------------ vendor blobs
 # 2026-10-17 撤回：DSU 只替换 system，/vendor 保持原厂不动，不再把 2882 个 blob
 # 塞进构建（那是所有 overriding commands 冲突的来源）。需要整机刷写时再打开。

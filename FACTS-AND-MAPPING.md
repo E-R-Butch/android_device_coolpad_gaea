@@ -59,3 +59,24 @@ androidboot.usbcontroller=a600000.dwc3 swiotlb=2048 cgroup.memory=nokmem,nosocke
 - [ ] overlays（`frameworks/base` 与 `packages/apps/Settings` 的最小集）
 - [ ] sepolicy：先最小集（HAL 相关），按开机日志迭代
 - [ ] `BoardConfig.mk` / `device.mk` 定稿后跑 `breakfast gaea` 验证被识别
+
+## 六、lineage-20（Android 13）适配变更
+
+本分支在 18.1 的基础上只做“A13 系统 + A10 原厂 vendor”必需的改动，数值不重新猜：
+
+| 改动 | 内容 | 依据 |
+|---|---|---|
+| 内核改 prebuilt | `TARGET_PREBUILT_KERNEL` / `BOARD_PREBUILT_DTBIMAGE_DIR` / `BOARD_PREBUILT_DTBOIMAGE` | 内核由我们在 `gaea-kernel` 容器独立编（R48：binderfs + 内建 rt1011），二进制按 RELEASE_POLICY 不入 Git |
+| 出厂 API 声明 | `PRODUCT_SHIPPING_API_LEVEL := 29` | 实测 `ro.product.first_api_level=29`；A13 据此走 legacy vendor 路径 |
+| VNDK 快照 | `PRODUCT_EXTRA_VNDK_VERSIONS := 29` | 原厂 vendor 是 VNDK 29，系统侧必须同时产出 29 快照 |
+| metadata 分区 | `BOARD_USES_METADATA_PARTITION := true` | 实测 `metadata` 16 MiB |
+| 去掉 gralloc1 | 删除 `TARGET_USES_GRALLOC1`，保留 `TARGET_USES_GRALLOC4` | A13 已移除 gralloc1；实测 A13 GSI 上 vendor 只提供 allocator 3.0 |
+| A/B 更新集 | `AB_OTA_PARTITIONS += ... vbmeta_system ...` | 动态分区下 `vbmeta_system` 需纳入 |
+| sepolicy 变量 | `BOARD_SEPOLICY_DIRS` + `SYSTEM_EXT_PRIVATE_SEPOLICY_DIRS` | A13 的变量名；`BOARD_PLATFORM_SEPOLICY_DIRS` 在 18.1 之外的语义待 sync 后按 `system/sepolicy` 复核 |
+| 删 vendorsetup.sh | `add_lunch_combo` 已废弃，靠 `AndroidProducts.mk` 的 `COMMON_LUNCH_CHOICES` | AOSP 10 起移除 vendorsetup 机制 |
+
+**sync 完成后必须复核的项**（不猜，读源码）：
+
+- [ ] `BOARD_SEPOLICY_DIRS` / `SYSTEM_EXT_PRIVATE_SEPOLICY_DIRS` 在 LOS 20 的定义位置与是否另有 `BOARD_PLATFORM_SEPOLICY_DIRS`
+- [ ] `BOARD_PREBUILT_DTBIMAGE_DIR` 对 QTI `dt_table`（单文件、非标准 dtb 列表）是否可用；不行则改用 `TARGET_KERNEL_SOURCE` 走源码编
+- [ ] `PRODUCT_EXTRA_VNDK_VERSIONS := 29` 是否足以让 A10 vendor 的 `libhidl`/`libutils` 解析通过（否则需补 `BOARD_VNDK_VERSION`）
