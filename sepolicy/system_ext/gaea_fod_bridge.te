@@ -1,0 +1,14 @@
+type gaea_fod_bridge, domain, coredomain;
+type gaea_fod_bridge_exec, system_file_type, exec_type, file_type;
+
+init_daemon_domain(gaea_fod_bridge)
+
+# Allow using HwBinder
+hwbinder_use(gaea_fod_bridge)
+get_prop(gaea_fod_bridge, hwservicemanager_prop)
+allow gaea_fod_bridge hal_fingerprint_hwservice:hwservice_manager find;
+hal_client_domain(gaea_fod_bridge, hal_fingerprint)
+
+# Allow reading input devices (/dev/input/event*)
+allow gaea_fod_bridge input_device:dir r_dir_perms;
+allow gaea_fod_bridge input_device:chr_file r_file_perms;

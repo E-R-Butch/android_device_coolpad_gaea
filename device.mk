@@ -52,7 +52,8 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/handheld_core_hardware.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/handheld_core_hardware.xml
 
 # ------------------------------------------------------------------ 设备自己的 init
-#   $(DEVICE_PATH)/rootdir/etc/init.gaea.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/init.gaea.rc   # TODO: 文件待写
+PRODUCT_COPY_FILES += \
+    $(DEVICE_PATH)/rootdir/etc/init.gaea.rc:$(TARGET_COPY_OUT_SYSTEM)/etc/init/init.gaea.rc
 
 # ------------------------------------------------------------------ 属性
 TARGET_SYSTEM_PROP += $(DEVICE_PATH)/system.prop    # TODO: 文件待写（从原厂 getprop 提炼）

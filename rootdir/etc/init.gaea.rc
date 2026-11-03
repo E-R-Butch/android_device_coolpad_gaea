@@ -1,5 +1,12 @@
-# 3917JR / gaea 设备专用 init（占位）
-# 原厂的 /vendor/etc/init/hw/init.target.rc 已随 blobs 一起保留（含
-# goodix 数据目录、HBM 节点属主等），此文件只放 ROM 侧新增动作。
-on late-init
-    # TODO: 按开机日志补充
+# 3917JR / gaea 设备专用 init
+# 原厂的 /vendor/etc/init/hw/init.target.rc 已由原厂 vendor 分区保留。
+# 此处配置 ROM 侧系统节点属主与权限。
+
+on boot
+    # Display HBM sysfs permissions for SystemUI / FOD bridge
+    chown system graphics /sys/class/display_hbm/hbm_mode/status
+    chmod 0664 /sys/class/display_hbm/hbm_mode/status
+
+    # FocalTech touchscreen gesture mode permissions
+    chown system input /sys/bus/i2c/devices/1-0038/fts_gesture_mode
+    chmod 0664 /sys/bus/i2c/devices/1-0038/fts_gesture_mode

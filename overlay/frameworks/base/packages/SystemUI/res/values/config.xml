@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (C) 2026 The LineageOS Project
+     SPDX-License-Identifier: Apache-2.0
+-->
+<resources>
+    <!-- Color of the UDFPS illumination circle.
+         Goodix GW9558 optical under-display sensor uses green spectrum for maximum quantum efficiency. -->
+    <color name="config_udfpsColor">#00ff00</color>
+</resources>

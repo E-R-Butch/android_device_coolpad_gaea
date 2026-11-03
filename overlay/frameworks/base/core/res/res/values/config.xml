@@ -20,4 +20,17 @@
         <item>2015</item>
         <item>106</item>
     </integer-array>
+
+    <!-- Display Cutout (Camera Notch) Path Spec.
+         Physical dimensions: 1080x2340 @ 480dpi (density 3.0).
+         Cutout bounds: [488, 0 - 593, 76] (Center X=540.5, Width=105, Height=76). -->
+    <string name="config_mainBuiltInDisplayCutout" translatable="false">
+        m -51.64,0.36 l 104.92,0 s -15.34544,0 -25.45678,31.43328 c -8.98125,30.45776 -15.86092,43.844 -26.88426,43.35624 c -13.87831,-0.37937 -18.63658,-19.18514 -26.88426,-42.6517 a 36.79734,100.58649 0 0 0 -25.69469,-32.13782 z
+    </string>
+
+    <!-- Corner Radii for 3917JR Curved Display.
+         Physical radius: 60px @ 480dpi = 20dp. -->
+    <dimen name="rounded_corner_radius">20.0dp</dimen>
+    <dimen name="rounded_corner_radius_top">20.0dp</dimen>
+    <dimen name="rounded_corner_radius_bottom">20.0dp</dimen>
 </resources>
