@@ -42,3 +42,7 @@ WITH_ADB_INSECURE := true
 PRODUCT_PACKAGES += \
     OpenEUICC \
     privapp_whitelist_im.angry.openeuicc.xml
+
+# FOD Hardware Bridge
+PRODUCT_PACKAGES += \
+    gaea_fod_bridge

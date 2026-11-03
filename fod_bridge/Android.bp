@@ -1,0 +1,21 @@
+//
+// Copyright (C) 2026 The LineageOS Project
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+
+cc_binary {
+    name: "gaea_fod_bridge",
+    srcs: ["gaea_fod_bridge.cpp"],
+    init_rc: ["gaea_fod_bridge.rc"],
+    shared_libs: [
+        "libhidlbase",
+        "libutils",
+        "liblog",
+    ],
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wno-unused-parameter",
+    ],
+}
