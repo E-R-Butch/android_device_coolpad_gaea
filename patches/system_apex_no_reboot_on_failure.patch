@@ -1,0 +1,19 @@
+diff --git a/apexd/apexd.rc b/apexd/apexd.rc
+index f64688f..e306025 100644
+--- a/apexd/apexd.rc
++++ b/apexd/apexd.rc
+@@ -5,14 +5,12 @@ service apexd /system/bin/apexd
+     group system
+     oneshot
+     disabled # does not start with the core class
+-    reboot_on_failure reboot,apexd-failed
+ 
+ service apexd-bootstrap /system/bin/apexd --bootstrap
+     user root
+     group system
+     oneshot
+     disabled
+-    reboot_on_failure reboot,bootloader,bootstrap-apexd-failed
+ 
+ service apexd-snapshotde /system/bin/apexd --snapshotde
+     user root

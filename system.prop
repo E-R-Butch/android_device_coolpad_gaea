@@ -1,3 +1,18 @@
 # 3917JR / gaea —— 系统侧属性（数值取自原厂 getprop 实测，2026-10-17）
 ro.sf.lcd_density=480
 ro.hardware.vulkan=adreno
+qemu.hw.mainkeys=0
+
+# VNDK 兼容性：酷派原厂 Vendor 停留在 API 29 (Android 10)
+ro.vndk.version=29
+
+# USB 与调试
+sys.usb.controller=a600000.dwc3
+vendor.usb.controller=a600000.dwc3
+persist.sys.usb.config=adb
+sys.usb.config=adb
+persist.sys.disable_rescue=true
+ro.logd.kernel=true
+ro.logd.auditd=true
+ro.apex.updatable=false
+ro.adb.secure=0

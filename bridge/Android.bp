@@ -1,0 +1,10 @@
+cc_prebuilt_binary {
+    name: "resetprop_phh",
+    srcs: ["resetprop_phh"],
+    stem: "resetprop_phh",
+    compile_multilib: "64",
+    strip: {
+        none: true,
+    },
+    check_elf_files: false,
+}

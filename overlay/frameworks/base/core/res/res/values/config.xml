@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (C) 2026 The LineageOS Project
+     SPDX-License-Identifier: Apache-2.0
+-->
+<resources>
+    <!-- Optical In-Display Fingerprint Sensor (UDFPS) Properties.
+         Physical display resolution: 1080x2340 @ 480dpi.
+         Values reverse-engineered from stock SystemUI FingerprintAreaView / keyguard_bouncer.xml:
+         layout_x = 435px, layout_y = 1909px, width = 212px, height = 212px.
+         Center X = 540, Center Y = 2015, Radius = 106. -->
+    <integer-array name="config_udfps_sensor_props" translatable="false">
+        <item>540</item>
+        <item>2015</item>
+        <item>106</item>
+    </integer-array>
+</resources>

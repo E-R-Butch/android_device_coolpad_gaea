@@ -1,0 +1,14 @@
+on early-init
+    setprop sys.usb.controller a600000.dwc3
+    setprop vendor.usb.controller a600000.dwc3
+
+on post-fs
+    # Early VNDK 29 link for vendor HALs
+    mkdir /apex 0755 root root
+    mkdir /apex/com.android.vndk.v29 0755 root root
+    mount none /system/system_ext/apex/com.android.vndk.v29 /apex/com.android.vndk.v29 bind
+
+on boot
+    setprop sys.usb.configfs 1
+    setprop persist.sys.usb.config adb
+    setprop sys.usb.config adb

@@ -6,20 +6,13 @@
 
 DEVICE_PATH := device/coolpad/gaea
 
-# ------------------------------------------------------------------ A13 与 A10 vendor 共存
-# 设备出厂 API 是 29（实测 ro.product.first_api_level=29），必须如实声明：
-# 系统侧据此走 legacy vendor 兼容路径，而不是按 A13 的新要求去要求原厂 vendor。
-PRODUCT_SHIPPING_API_LEVEL := 29
-# 原厂 vendor 是 VNDK 29，系统侧必须同时产出 VNDK 29 快照给 vendor 链接。
-PRODUCT_EXTRA_VNDK_VERSIONS := 29
-
 # ------------------------------------------------------------------ vendor blobs
 # 2026-10-17 撤回：DSU 只替换 system，/vendor 保持原厂不动，不再把 2882 个 blob
 # 塞进构建（那是所有 overriding commands 冲突的来源）。需要整机刷写时再打开。
 # $(call inherit-product, vendor/coolpad/gaea/gaea-vendor.mk)
 
 # ------------------------------------------------------------------ 硬件特性声明
-# 依据原厂 `pm list features` 实测（88 项，2026-10-17）挑出对应 permission XML
+# 依据原厂 pm list features 实测（88 项，2026-10-17）挑出对应 permission XML
 PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.audio.low_latency.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.audio.low_latency.xml \
     frameworks/native/data/etc/android.hardware.audio.pro.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.audio.pro.xml \
@@ -59,8 +52,7 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/handheld_core_hardware.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/handheld_core_hardware.xml
 
 # ------------------------------------------------------------------ 设备自己的 init
-PRODUCT_COPY_FILES += \
-    $(DEVICE_PATH)/rootdir/etc/init.gaea.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/init.gaea.rc   # TODO: 文件待写
+#   $(DEVICE_PATH)/rootdir/etc/init.gaea.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/init.gaea.rc   # TODO: 文件待写
 
 # ------------------------------------------------------------------ 属性
 TARGET_SYSTEM_PROP += $(DEVICE_PATH)/system.prop    # TODO: 文件待写（从原厂 getprop 提炼）
@@ -73,15 +65,31 @@ DEVICE_MATRIX_FILE := $(DEVICE_PATH)/vintf/compatibility_matrix.xml      # TODO:
 # ------------------------------------------------------------------ 私有库（原厂 vendor 里已有，这里声明必需项）
 PRODUCT_PACKAGES += \
     libqdMetaData \
-    libtinyxml2
+    libtinyxml2 \
+    gsi_skip_mount.cfg \
+    vndk_v29_symlinks
 
 # ------------------------------------------------------------------ fstab
-PRODUCT_COPY_FILES += \
-    $(DEVICE_PATH)/rootdir/etc/fstab.qcom:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.qcom   # TODO: 文件待写（实测分区）
+#   $(DEVICE_PATH)/rootdir/etc/fstab.qcom:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.qcom   # TODO: 文件待写（实测分区）
+
+DEVICE_PACKAGE_OVERLAYS += $(DEVICE_PATH)/overlay
 
 # ------------------------------------------------------------------ overlay / sepolicy 目录（内容待补）
 PRODUCT_ENFORCE_RRO_TARGETS := *
+PRODUCT_ENFORCE_RRO_EXCLUDED_OVERLAYS += $(DEVICE_PATH)/overlay
 
 # 最后：剔除源码树里与原厂 vendor 重名的 HAL 默认实现（原厂二进制随 blobs 复制优先）
 # 该文件由 restore-filter.py 生成
 -include device/coolpad/gaea/vendor-module-overrides.mk
+
+# ------------------------------------------------------------------ GSI / VNDK 29 兼容桥与早期 ADB
+PRODUCT_PACKAGES += resetprop_phh
+PRODUCT_COPY_FILES += \
+    $(DEVICE_PATH)/bridge/vndk-detect:system/bin/vndk-detect \
+    $(DEVICE_PATH)/bridge/rw-system.sh:system/bin/rw-system.sh \
+    $(DEVICE_PATH)/bridge/vndk.rc:system/etc/init/vndk.rc \
+    $(DEVICE_PATH)/bridge/phh-on-boot.sh:system/bin/phh-on-boot.sh \
+    $(DEVICE_PATH)/bridge/phh-on-data.sh:system/bin/phh-on-data.sh \
+    $(DEVICE_PATH)/bridge/phh-prop-handler.sh:system/bin/phh-prop-handler.sh \
+    $(DEVICE_PATH)/bridge/init.early_gadget.rc:system/etc/init/hw/init.early_gadget.rc
+

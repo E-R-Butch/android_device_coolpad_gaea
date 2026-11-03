@@ -25,3 +25,15 @@ PRODUCT_GMS_CLIENTID_BASE := android-yulong
 # Device is A/B with dynamic partitions
 PRODUCT_USE_DYNAMIC_PARTITIONS := true
 PRODUCT_BUILD_SUPER_PARTITION := true
+
+# vendor 停在 API 29 / FCM 4 ⇒ 出货 API 必须照实测值写，不是目标版本号
+PRODUCT_SHIPPING_API_LEVEL := 29
+# 旧 vendor 需要 29 版 VNDK 快照
+PRODUCT_EXTRA_VNDK_VERSIONS := 29
+
+PRODUCT_PACKAGES += \
+    com.android.vndk.v29 \
+    gsi_skip_mount.cfg
+
+# Bringup settings
+WITH_ADB_INSECURE := true

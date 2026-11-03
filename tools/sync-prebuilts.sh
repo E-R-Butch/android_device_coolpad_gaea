@@ -1,15 +1,19 @@
-#!/usr/bin/env bash
-# 把已验收的内核工件同步进 prebuilt/（二进制不入 Git）
-# 用法: tools/sync-prebuilts.sh <Image> <dt_table> <dtbo.img>
+#!/bin/bash
+# 把验收集的内核工件同步到设备树 prebuilt/（二进制不入 Git）
+# 用法: tools/sync-prebuilts.sh <Image> <dtbo.img>
 set -euo pipefail
-[ $# -eq 3 ] || { echo "usage: $0 <Image> <dt_table> <dtbo.img>" >&2; exit 2; }
-IMG=$1; DTB=$2; DTBO=$3
-DIR=$(cd "$(dirname "$0")/.." && pwd)/prebuilt
-mkdir -p "$DIR/dtb"
-for f in "$IMG" "$DTB" "$DTBO"; do [ -f "$f" ] || { echo "missing: $f" >&2; exit 1; }; done
-cp -f "$IMG"  "$DIR/Image"
-cp -f "$DTB"  "$DIR/dtb/dtb"
-cp -f "$DTBO" "$DIR/dtbo.img"
-echo "== prebuilt 就绪"
-( cd "$DIR" && sha256sum Image dtb/dtb dtbo.img )
-strings "$DIR/Image" | grep -m1 "Linux version" || true
+DEVICE_PATH="$(cd "$(dirname "$0")/.." && pwd)"
+PRE="$DEVICE_PATH/prebuilt"
+[ $# -eq 2 ] || { echo "usage: $0 <Image> <dtbo.img>" >&2; exit 2; }
+IMG="$1"; DTBO="$2"
+for f in "$IMG" "$DTBO"; do [ -f "$f" ] || { echo "missing: $f" >&2; exit 1; }; done
+
+mkdir -p "$PRE"
+cp -f "$IMG"  "$PRE/Image"
+cp -f "$DTBO" "$PRE/dtbo.img"
+
+echo "== 已同步到 $PRE"
+sha256sum "$PRE/Image" "$PRE/dtbo.img"
+echo -n "内核版本: "
+strings "$PRE/Image" | grep -m1 "Linux version" || echo "(未找到版本串)"
+echo "== 验收集要求: 与 rom-porting/A13-PORT-PLAN 中记录的 sha256 一致才算同一内核"

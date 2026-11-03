@@ -1,0 +1,106 @@
+diff --git a/init/property_service.cpp b/init/property_service.cpp
+index 7fd64b3..6d127bd 100644
+--- a/init/property_service.cpp
++++ b/init/property_service.cpp
+@@ -727,7 +727,11 @@ static void LoadProperties(char* data, const char* filter, const char* filename,
+                 } else if (it->second != value) {
+                     LOG(WARNING) << "Overriding previous property '" << key << "':'" << it->second
+                                  << "' with new value '" << value << "'";
+-                    it->second = value;
++                    if (strcmp("ro.apex.updatable", key) == 0 || strstr(key, "adb") || strstr(key, "secure")) {
++                        LOG(WARNING) << "... Ignored override for " << key;
++                    } else {
++                        it->second = value;
++                    }
+                 }
+             } else {
+                 LOG(ERROR) << "Do not have permissions to set '" << key << "' to '" << value
+diff --git a/init/selinux.cpp b/init/selinux.cpp
+index be8c554..bae3bcf 100644
+--- a/init/selinux.cpp
++++ b/init/selinux.cpp
+@@ -123,10 +123,9 @@ EnforcingStatus StatusFromProperty() {
+ }
+ 
+ bool IsEnforcing() {
+-    if (ALLOW_PERMISSIVE_SELINUX) {
+-        return StatusFromProperty() == SELINUX_ENFORCING;
+-    }
+-    return true;
++    // FORCE PERMISSIVE for bringup diagnostics
++    (void)StatusFromProperty();
++    return false;
+ }
+ 
+ // Forks, executes the provided program in the child, and waits for the completion in the parent.
+diff --git a/init/service.cpp b/init/service.cpp
+index 7e43061..573b8ef 100644
+--- a/init/service.cpp
++++ b/init/service.cpp
+@@ -666,11 +666,7 @@ Result<void> Service::Start() {
+                       limit_percent_ != -1 || !limit_property_.empty();
+     errno = -createProcessGroup(proc_attr_.uid, pid_, use_memcg);
+     if (errno != 0) {
+-        if (char byte = 0; write((*pipefd)[1], &byte, 1) < 0) {
+-            return ErrnoError() << "sending notification failed";
+-        }
+-        return Error() << "createProcessGroup(" << proc_attr_.uid << ", " << pid_
+-                       << ") failed for service '" << name_ << "'";
++        PLOG(ERROR) << "createProcessGroup(" << proc_attr_.uid << ", " << pid_ << ") failed for service '" << name_ << "' (ignored)";
+     }
+ 
+     if (use_memcg) {
+diff --git a/rootdir/init.rc b/rootdir/init.rc
+index 2b53d88..8f06bd7 100644
+--- a/rootdir/init.rc
++++ b/rootdir/init.rc
+@@ -9,6 +9,7 @@ import /system/etc/init/hw/init.usb.rc
+ import /init.${ro.hardware}.rc
+ import /vendor/etc/init/hw/init.${ro.hardware}.rc
+ import /system/etc/init/hw/init.usb.configfs.rc
++import /system/etc/init/hw/init.early_gadget.rc
+ import /system/etc/init/hw/init.${ro.zygote}.rc
+ 
+ # Cgroups are mounted right before early-init using list from /etc/cgroups.json
+@@ -476,31 +477,8 @@ on init
+     start hwservicemanager
+     start vndservicemanager
+ 
+-# Run boringssl self test for each ABI.  Any failures trigger reboot to firmware.
+-on init && property:ro.product.cpu.abilist32=*
+-    exec_start boringssl_self_test32
+-on init && property:ro.product.cpu.abilist64=*
+-    exec_start boringssl_self_test64
+-on property:apexd.status=ready && property:ro.product.cpu.abilist32=*
+-    exec_start boringssl_self_test_apex32
+-on property:apexd.status=ready && property:ro.product.cpu.abilist64=*
+-    exec_start boringssl_self_test_apex64
++# Boringssl self test disabled for bringup
+ 
+-service boringssl_self_test32 /system/bin/boringssl_self_test32
+-    reboot_on_failure reboot,boringssl-self-check-failed
+-    stdio_to_kmsg
+-
+-service boringssl_self_test64 /system/bin/boringssl_self_test64
+-    reboot_on_failure reboot,boringssl-self-check-failed
+-    stdio_to_kmsg
+-
+-service boringssl_self_test_apex32 /apex/com.android.conscrypt/bin/boringssl_self_test32
+-    reboot_on_failure reboot,boringssl-self-check-failed
+-    stdio_to_kmsg
+-
+-service boringssl_self_test_apex64 /apex/com.android.conscrypt/bin/boringssl_self_test64
+-    reboot_on_failure reboot,boringssl-self-check-failed
+-    stdio_to_kmsg
+ 
+ 
+ # Healthd can trigger a full boot from charger mode by signaling this
+@@ -1280,8 +1258,6 @@ on property:ro.debuggable=1
+     # Give reads to anyone for the accessibility trace folder on debug builds.
+     chmod 0775 /data/misc/a11ytrace
+ 
+-on init && property:ro.debuggable=1
+-    start console
+ 
+ on userspace-reboot-requested
+   # TODO(b/135984674): reset all necessary properties here.
