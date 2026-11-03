@@ -1,0 +1,21 @@
+//
+// Copyright (C) 2026 The LineageOS Project
+//
+// OpenEUICC (Local Profile Assistant for eSIM)
+//
+
+android_app_import {
+    name: "OpenEUICC",
+    apk: "OpenEUICC.apk",
+    certificate: "platform",
+    privileged: true,
+    system_ext_specific: true,
+    required: ["privapp_whitelist_im.angry.openeuicc.xml"],
+}
+
+prebuilt_etc {
+    name: "privapp_whitelist_im.angry.openeuicc.xml",
+    sub_dir: "permissions",
+    src: "privapp_whitelist_im.angry.openeuicc.xml",
+    system_ext_specific: true,
+}

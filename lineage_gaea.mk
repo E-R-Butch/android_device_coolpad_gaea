@@ -37,3 +37,8 @@ PRODUCT_PACKAGES += \
 
 # Bringup settings
 WITH_ADB_INSECURE := true
+
+# eSIM LPA (OpenEUICC)
+PRODUCT_PACKAGES += \
+    OpenEUICC \
+    privapp_whitelist_im.angry.openeuicc.xml
