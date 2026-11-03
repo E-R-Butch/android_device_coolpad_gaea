@@ -16,3 +16,12 @@ ro.logd.kernel=true
 ro.logd.auditd=true
 ro.apex.updatable=false
 ro.adb.secure=0
+
+# Device identification
+ro.product.model=Coolpad 3917JR
+ro.product.odm.model=Coolpad 3917JR
+ro.product.vendor.model=Coolpad 3917JR
+ro.product.system.model=Coolpad 3917JR
+ro.product.system_ext.model=Coolpad 3917JR
+ro.product.product.model=Coolpad 3917JR
+bluetooth.device.default_name=Coolpad 3917JR
