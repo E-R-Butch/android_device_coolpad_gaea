@@ -124,8 +124,8 @@ int main(int argc, char** argv) {
     while (!getService()) {
         sleep(1);
     }
-    // Enable touchscreen FOD gesture mode
-    setHbm(4);
+    // Touchscreen FOD key reporting works in normal multitouch mode
+    // DO NOT call setHbm(4) here as it enables fts_gesture_mode and blocks normal touches
 
     int touch_fd = -1;
     bool is_pressed = false;
