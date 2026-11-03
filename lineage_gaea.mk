@@ -16,11 +16,11 @@ $(call inherit-product, vendor/lineage/config/common_full_phone.mk)
 
 PRODUCT_NAME := lineage_gaea
 PRODUCT_DEVICE := gaea
-PRODUCT_BRAND := Rakuten
-PRODUCT_MODEL := 3917JR
-PRODUCT_MANUFACTURER := Yulong
+PRODUCT_BRAND := Coolpad
+PRODUCT_MODEL := Coolpad 3917JR
+PRODUCT_MANUFACTURER := Coolpad
 
-PRODUCT_GMS_CLIENTID_BASE := android-yulong
+PRODUCT_GMS_CLIENTID_BASE := android-coolpad
 
 # Device is A/B with dynamic partitions
 PRODUCT_USE_DYNAMIC_PARTITIONS := true
