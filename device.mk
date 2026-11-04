@@ -68,7 +68,8 @@ PRODUCT_PACKAGES += \
     libqdMetaData \
     libtinyxml2 \
     gsi_skip_mount.cfg \
-    vndk_v29_symlinks
+    vndk_v29_symlinks \
+    NetworkStackOverlayGaea
 
 # ------------------------------------------------------------------ fstab
 #   $(DEVICE_PATH)/rootdir/etc/fstab.qcom:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.qcom   # TODO: 文件待写（实测分区）
