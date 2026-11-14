@@ -1,12 +1,12 @@
 #
-# Copyright (C) 2026 The LineageOS Project
+# Copyright (C) 2026 The PixelOS Project
 #
 # SPDX-License-Identifier: Apache-2.0
 #
 
 PRODUCT_MAKEFILES := \
-    $(LOCAL_DIR)/lineage_gaea.mk
+    $(LOCAL_DIR)/pixelos_gaea.mk
 
 COMMON_LUNCH_CHOICES := \
-    lineage_gaea-userdebug \
-    lineage_gaea-eng
+    pixelos_gaea-userdebug \
+    pixelos_gaea-eng

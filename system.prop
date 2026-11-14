@@ -15,7 +15,7 @@ persist.sys.disable_rescue=true
 ro.logd.kernel=true
 ro.logd.auditd=true
 ro.apex.updatable=false
-ro.adb.secure=0
+# ro.adb.secure=0  # PixelOS common sets 1
 
 # Device identification
 bluetooth.device.default_name=Coolpad 3917JR
