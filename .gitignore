@@ -6,3 +6,21 @@
 out/
 *.img
 *.zip
+
+# editor / tooling
+*.swp
+*~
+.idea/
+.vscode/
+
+# 内核与 dtbo 二进制不入库（见 prebuilt/.gitignore 与 prebuilt/README.md）
+prebuilt/Image
+prebuilt/dtbo.img
+prebuilt/dtb/dtb
+prebuilt/dtbimage/*.dtb
+
+# 设备树备份文件（本地调试残留，不入库）
+*.bak
+*.bak-*
+*.orig
+*.rej

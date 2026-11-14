@@ -10,10 +10,11 @@
   修改为失败时打印 ERROR 日志并继续派生服务，避免 `surfaceflinger`、`zygote`、`vold` 被拦截。
 - **`init/property_service.cpp`**:
   拦截 vendor 覆盖 `ro.apex.updatable=false`。4.19 内核对压缩 APEX 的 loopback 读写有内核级缺陷，必须强制保持 false。
-- **`init/selinux.cpp`**:
-  强制 Permissive 模式作为诊断探针。
 - **`rootdir/init.rc`**:
   引入 `init.early_gadget.rc`，并移除调试阶段导致死循环的 `start console`。
+
+> 早期用于强制 Permissive 的 `init/selinux.cpp` 改动已移除。设备现在在 Enforcing
+> 下正常启动，不再需要该探针。
 
 ### 2. `system_bpf_legacy_kernel.patch`
 - **`bpfloader/BpfLoader.cpp`**:
