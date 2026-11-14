@@ -67,12 +67,19 @@ DEVICE_MATRIX_FILE := $(DEVICE_PATH)/vintf/compatibility_matrix.xml      # TODO:
 PRODUCT_PACKAGES += \
     libqdMetaData \
     libtinyxml2 \
-    gsi_skip_mount.cfg \
     vndk_v29_symlinks \
     NetworkStackOverlayGaea
 
+ifneq ($(GAEA_SEPARATE_PRODUCT),true)
+PRODUCT_PACKAGES += gsi_skip_mount.cfg
+endif
+
 # ------------------------------------------------------------------ fstab
-#   $(DEVICE_PATH)/rootdir/etc/fstab.qcom:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.qcom   # TODO: 文件待写（实测分区）
+# first-stage 必须能从 ramdisk 读到 fstab，否则 init 无法挂 system（PixelOS 自家 ramdisk 里
+# fstab 一直是缺的：2026-11-08 实测该镜像启动 1 s 内 panic / 进 crashdump）
+PRODUCT_COPY_FILES += \
+    $(DEVICE_PATH)/rootdir/etc/fstab.qcom:$(TARGET_COPY_OUT_RAMDISK)/fstab.qcom \
+    $(DEVICE_PATH)/rootdir/etc/fstab.qcom:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.qcom
 
 DEVICE_PACKAGE_OVERLAYS += $(DEVICE_PATH)/overlay
 
