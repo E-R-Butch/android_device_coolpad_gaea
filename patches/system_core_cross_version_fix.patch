@@ -15,24 +15,6 @@ index 7fd64b3..6d127bd 100644
                  }
              } else {
                  LOG(ERROR) << "Do not have permissions to set '" << key << "' to '" << value
-diff --git a/init/selinux.cpp b/init/selinux.cpp
-index be8c554..bae3bcf 100644
---- a/init/selinux.cpp
-+++ b/init/selinux.cpp
-@@ -123,10 +123,9 @@ EnforcingStatus StatusFromProperty() {
- }
- 
- bool IsEnforcing() {
--    if (ALLOW_PERMISSIVE_SELINUX) {
--        return StatusFromProperty() == SELINUX_ENFORCING;
--    }
--    return true;
-+    // FORCE PERMISSIVE for bringup diagnostics
-+    (void)StatusFromProperty();
-+    return false;
- }
- 
- // Forks, executes the provided program in the child, and waits for the completion in the parent.
 diff --git a/init/service.cpp b/init/service.cpp
 index 7e43061..573b8ef 100644
 --- a/init/service.cpp
