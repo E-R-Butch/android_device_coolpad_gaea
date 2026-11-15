@@ -59,6 +59,13 @@ PRODUCT_COPY_FILES += \
 TARGET_SYSTEM_PROP += $(DEVICE_PATH)/system.prop    # TODO: 文件待写（从原厂 getprop 提炼）
 TARGET_VENDOR_PROP += $(DEVICE_PATH)/vendor.prop    # TODO: 同上
 
+# ⚠️ 这两个属性是 POS 能开机的必要条件，缺任一则 /data 挂载失败、USB 不枚举。
+#    2026-11-13 gen=450 单变量实验确认，详见 product.prop 内注释。
+#    必须落在 product 分区（在 vendor/build.prop 之后加载）。
+PRODUCT_PRODUCT_PROPERTIES += \
+    ro.apex.updatable=false \
+    ro.build.version.security_patch=2026-02-01
+
 # ------------------------------------------------------------------ VINTF（必须合并 /vendor/etc/vintf/manifest 的 8 个 fragment）
 DEVICE_MANIFEST_FILE := $(DEVICE_PATH)/vintf/manifest.xml                # TODO: 待生成（含 fragment 合并）
 DEVICE_MATRIX_FILE := $(DEVICE_PATH)/vintf/compatibility_matrix.xml      # TODO: 来自原厂 vendor matrix

@@ -1,0 +1,19 @@
+# 3917JR / gaea —— product 侧属性
+#
+# 这两个属性是 POS 能开机的必要条件，2026-11-13 gen=450 单变量实验确认：
+# 缺任一则 /data 挂载失败 → vold 失败 → Keystore panic → init 重启 → USB 不枚举。
+#
+# 1) ro.apex.updatable=false
+#    vendor 的 build.prop 会把它覆盖成 true。4.19 内核对压缩 APEX 的 loopback
+#    读写有缺陷，必须强制保持 false，让 apexd 走 flattened 路径。
+#    同时 patches/system_core_cross_version_fix.patch 在属性层拦截 vendor 覆盖。
+#
+# 2) ro.build.version.security_patch=2026-02-01
+#    这是声明值，不是真实安全升级（代码基线仍是 2023-09）。
+#    原数据的 Keymaster blob 版本绑定高于 2023-09，声明值低于它时
+#    TEE 返回 begin -62 → upgradeKey -38，/data 无法解密挂载。
+#    声明值对齐后 TEE 放行，/data 正常挂载。
+#    ⚠️ 这个文件必须留在 product 分区：它在 vendor/build.prop 之后加载，才能生效。
+
+ro.apex.updatable=false
+ro.build.version.security_patch=2026-02-01
