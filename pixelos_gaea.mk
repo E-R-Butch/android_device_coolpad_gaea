@@ -4,6 +4,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+# ---------------------------------------------------------------- 发版裁剪
+# 必须在 inherit-product 之前设置：handheld_product.mk / base_system.mk 用
+# ifeq ($(CUSTOM_BUILD),) 判断是否加入 AOSP 的 Camera2、LatinIME、su。
+# 本产品不用 AOSP Camera2（保留 Aperture），输入法用 LatinImeGoogle
+# （包名同为 com.android.inputmethod.latin），故置为非空跳过这批 AOSP 包。
+CUSTOM_BUILD := gaea
+
 # Inherit from those products. Most specific first.
 $(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit.mk)
 $(call inherit-product, $(SRC_TARGET_DIR)/product/full_base_telephony.mk)
@@ -48,10 +55,14 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     gaea_fod_bridge
 
-# Separate product image: do not skip /product at first-stage mount
-PRODUCT_PACKAGES := $(filter-out gsi_skip_mount.cfg Drive Maps DevicePersonalizationPrebuiltPixel2020,$(PRODUCT_PACKAGES))
-
 # 自持签名：PixelOS 的 vendor/aosp 没有 lineage-priv 那样的 keys.mk 钩子
 PRODUCT_DEFAULT_DEV_CERTIFICATE := vendor/aosp-priv/keys/releasekey
 PRODUCT_EXTRA_RECOVERY_KEYS += vendor/aosp-priv/keys/releasekey
 TARGET_CALL_RECORDING_SUPPORTED := false
+
+# ---------------------------------------------------------------- 发版裁剪
+# Drive / Maps：11-06 因 product 空间不足删除，用户从 Play 商店自装。
+# Music：AOSP 13 占位应用，无音乐库管理，用户用 Play Music 或本地播放器。
+# gsi_skip_mount.cfg：独立 product 分区，不需要 skip-mount 配置。
+# Camera2 / LatinIME 由文件开头的 CUSTOM_BUILD 排除，不在此列。
+PRODUCT_PACKAGES := $(filter-out gsi_skip_mount.cfg Drive Maps Music,$(PRODUCT_PACKAGES))
