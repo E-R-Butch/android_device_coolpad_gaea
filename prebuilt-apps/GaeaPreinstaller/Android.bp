@@ -1,0 +1,30 @@
+//
+// gaea 预装器
+//
+// 平台签名的 priv-app，开机后把 /system/preinstall/*.apk.bin 装进 /data/app。
+// 为什么不用 init service 见 BootReceiver.java 顶部注释。
+//
+
+android_app {
+    name: "GaeaPreinstaller",
+    srcs: ["src/**/*.java"],
+    manifest: "AndroidManifest.xml",
+    certificate: "platform",
+    privileged: true,
+    system_ext_specific: true,
+    platform_apis: true,
+    sdk_version: "",
+
+    optimize: {
+        enabled: false,
+    },
+
+    required: ["privapp_whitelist_com.gaea.preinstaller.xml"],
+}
+
+prebuilt_etc {
+    name: "privapp_whitelist_com.gaea.preinstaller.xml",
+    sub_dir: "permissions",
+    src: "privapp_whitelist_com.gaea.preinstaller.xml",
+    system_ext_specific: true,
+}

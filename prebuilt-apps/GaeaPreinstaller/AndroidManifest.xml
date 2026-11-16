@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.gaea.preinstaller"
+    android:versionCode="1"
+    android:versionName="1.0">
+
+    <!-- 平台签名 + priv-app 自动获得 -->
+    <uses-permission android:name="android.permission.INSTALL_PACKAGES" />
+    <!-- setGrantedRuntimePermissions 需要，protectionLevel=signature|installer|verifier -->
+    <uses-permission android:name="android.permission.INSTALL_GRANT_RUNTIME_PERMISSIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- 平台签名 priv-app，需要看全部包来判断预装是否已完成 -->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+
+    <!--
+      Android 11+ 包可见性过滤：不声明 queries，getPackageInfo() 对
+      其他包一律抛 NameNotFoundException，导致每次开机都误判未装、重装 326 MB。
+    -->
+    <queries>
+        <package android:name="org.codeaurora.snapcam" />
+    </queries>
+
+    <application
+        android:label="GaeaPreinstaller"
+        android:directBootAware="true"
+        android:persistent="false">
+
+        <receiver
+            android:name=".BootReceiver"
+            android:directBootAware="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".InstallResultReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.gaea.preinstaller.INSTALL_RESULT" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+</manifest>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<permissions>
+    <privapp-permissions package="com.gaea.preinstaller">
+        <permission name="android.permission.INSTALL_PACKAGES" />
+        <permission name="android.permission.INSTALL_GRANT_RUNTIME_PERMISSIONS" />
+        <permission name="android.permission.QUERY_ALL_PACKAGES" />
+    </privapp-permissions>
+</permissions>
