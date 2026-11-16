@@ -22,4 +22,8 @@ bluetooth.device.default_name=Coolpad 3917JR
 
 # Camera: Expose all 4 physical rear auxiliary cameras (Main, Wide, Tele, Macro)
 persist.vendor.camera.expose.aux=1
-vendor.camera.aux.packagelist=org.lineageos.aperture,com.google.android.GoogleCamera,com.android.camera
+# 辅助镜头（0.5x 超广角 / 2.2x 长焦）的可用 App 白名单。
+# 本设备用预装的 GCam（org.codeaurora.snapcam）作为唯一相机，列进来让它能枚举 aux 镜头。
+# Aperture / Camera2 已从系统移除，不用再列。
+# 注意：属性值上限 91 字节（PROP_VALUE_MAX 92 含结尾 NUL），超了构建直接失败。
+vendor.camera.aux.packagelist=org.codeaurora.snapcam,com.google.android.GoogleCamera
