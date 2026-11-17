@@ -101,7 +101,26 @@ PRODUCT_COPY_FILES += \
 # 只能开机后经 PackageInstaller 装进 /data/app，和 GCam 走同一条路。
 PRODUCT_COPY_FILES += \
     device/coolpad/gaea/prebuilt-apps/KernelSU/KernelSU_Next.apk.bin:$(TARGET_COPY_OUT_SYSTEM)/preinstall/KernelSU_Next.apk.bin
-# ---------------------------------------------------------------- 包裁剪
+# /system/bin/su —— KernelSU 的 sucompat 只认这个路径。
+#
+# 为什么需要这个文件：
+#   KSU 的 su 不是真二进制，是内核 hook 拦截 execve("/system/bin/su") 后
+#   重定向到 /data/adb/ksud。但 shell 执行 su 前会先 access()/stat() 检查，
+#   文件不存在就直接报 "inaccessible or not found"，execve 根本不会被调用，
+#   hook 也就没机会触发。所以必须放一个真实文件当"靶子"。
+#
+# 为什么用 AOSP 的 su 而不是自己写：
+#   AOSP system/extras/su 是标准实现，编出来 11 KB。它本身在 user build 里
+#   提不了权（没有 setuid），但 KSU 在 execve 阶段就把它劫持走了，
+#   根本走不到 AOSP 的逻辑，所以内容无所谓，只要是个可执行 ELF。
+#
+# 为什么不直接 PRODUCT_PACKAGES += su：
+#   system/extras/su/Android.bp 里写死 install_in_xbin: true，
+#   soong 的 installer.go:80 硬编码 dir = "xbin"，装到 /system/xbin/su，
+#   而内核 hook 的是 /system/bin/su，对不上。
+PRODUCT_COPY_FILES += \
+    device/coolpad/gaea/prebuilt-bin/su:$(TARGET_COPY_OUT_SYSTEM)/bin/su
+# ---------------------------------------------------------------- 发版裁剪
 #
 # 裁剪项：
 #   gsi_skip_mount.cfg : 独立 product 分区，不需要 skip-mount 配置
