@@ -44,27 +44,23 @@ public class BootReceiver extends BroadcastReceiver {
     /** APK 存放目录，由 device.mk 的 PRODUCT_COPY_FILES 铺进去 */
     private static final String SRC_DIR = "/system/preinstall";
 
-    /**
-     * 装完后写这个标记文件，避免每次开机重复扫描。
-     *
-     * 为什么不用属性：
-     *   sys.* 前缀重启后被清空；persist.* 需要额外的 property_contexts
-     *   和 SELinux 写权限。文件标记不需要任何权限，App 私有目录重启不丢。
-     */
-    private static final String MARKER_NAME = "preinstall_done";
-
     @Override
     public void onReceive(Context context, Intent intent) {
         if (!Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
             return;
         }
 
-        File marker = markerFile(context);
-        if (marker.exists()) {
-            Log.i(TAG, "marker exists (" + marker + "), skip");
+        // 不再用单一全局 marker：新增预装 App 时旧 marker 会让它永远装不上。
+        // 改成每次开机都扫一遍目录，逐个用 isInstalled() 判断，
+        // 已装的跳过、没装的才装。isInstalled 走 PackageManager 查询，
+        // 比读文件可靠，且天然支持后续追加新的预装 App。
+        File dir = new File(SRC_DIR);
+        File[] apks = dir.listFiles((d, name) -> name.endsWith(".apk.bin"));
+        if (apks == null || apks.length == 0) {
+            Log.w(TAG, "no apk found in " + SRC_DIR);
             return;
         }
-        Log.i(TAG, "marker missing (" + marker + "), proceed");
+        Log.i(TAG, "found " + apks.length + " apk(s) in " + SRC_DIR + ", checking");
 
         // receiver 有 10 秒超时，必须丢到后台线程
         new Thread(() -> installAll(context.getApplicationContext()),
@@ -84,8 +80,6 @@ public class BootReceiver extends BroadcastReceiver {
         File dir = new File(SRC_DIR);
         File[] apks = dir.listFiles((d, name) -> name.endsWith(".apk.bin"));
         if (apks == null || apks.length == 0) {
-            Log.w(TAG, "no apk found in " + SRC_DIR);
-            writeMarker(ctx);
             return;
         }
 
@@ -97,7 +91,6 @@ public class BootReceiver extends BroadcastReceiver {
             }
         }
 
-        writeMarker(ctx);
         Log.i(TAG, "all done");
     }
 
@@ -123,16 +116,12 @@ public class BootReceiver extends BroadcastReceiver {
 
         // 自动授予运行时权限，免掉首次启动的授权弹窗。
         // 对应 pm install -g 的行为（v26 用 shell 跑 pm install -g 时无弹窗）。
-        // 只列 GCam 真正需要的；不存在的权限会被系统忽略，不会报错。
-        params.setGrantedRuntimePermissions(new String[]{
-                android.Manifest.permission.CAMERA,
-                android.Manifest.permission.RECORD_AUDIO,
-                android.Manifest.permission.ACCESS_FINE_LOCATION,
-                android.Manifest.permission.ACCESS_COARSE_LOCATION,
-                // A13 用媒体细分权限，旧的 READ/WRITE_EXTERNAL_STORAGE 在 targetSdk 33+ 无效
-                android.Manifest.permission.READ_MEDIA_IMAGES,
-                android.Manifest.permission.READ_MEDIA_VIDEO,
-        });
+        // 按包名分别给：GCam 要相机/麦克风/定位/媒体读取，
+        // KSU 管理器（com.rifsxd.ksunext）一个运行时权限都不要，别硬塞。
+        String[] perms = runtimePermissionsFor(pkgName);
+        if (perms.length > 0) {
+            params.setGrantedRuntimePermissions(perms);
+        }
 
         int sessionId = installer.createSession(params);
         try (PackageInstaller.Session session = installer.openSession(sessionId)) {
@@ -152,31 +141,26 @@ public class BootReceiver extends BroadcastReceiver {
     }
 
     /**
-     * 标记文件必须放设备加密（DE）存储，不能放 CE。
+     * 每个预装 App 各自需要的运行时权限。
      *
-     * 本 App 是 directBootAware，BOOT_COMPLETED 时用户还没解锁，
-     * /data/user/0/（CE）尚未挂载，getFilesDir() 拿到的路径不可写。
-     * DE 存储（/data/user_de/0/）在开机早期就可用。
+     * 不存在的权限会被系统忽略，所以多列不会报错；
+     * 但给不需要的 App 塞权限是脏的，按包名分开更清楚。
      */
-    private File markerFile(Context ctx) {
-        return new File(ctx.createDeviceProtectedStorageContext().getFilesDir(),
-                MARKER_NAME);
-    }
-
-    private void writeMarker(Context ctx) {
-        try {
-            File marker = markerFile(ctx);
-            File dir = marker.getParentFile();
-            if (dir != null && !dir.exists() && !dir.mkdirs()) {
-                Log.w(TAG, "cannot create " + dir);
-                return;
-            }
-            if (marker.createNewFile()) {
-                Log.i(TAG, "marker written: " + marker);
-            }
-        } catch (Exception e) {
-            Log.w(TAG, "writeMarker failed", e);
+    private String[] runtimePermissionsFor(String pkg) {
+        if ("org.codeaurora.snapcam".equals(pkg)) {
+            return new String[]{
+                    android.Manifest.permission.CAMERA,
+                    android.Manifest.permission.RECORD_AUDIO,
+                    android.Manifest.permission.ACCESS_FINE_LOCATION,
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                    // A13 用媒体细分权限，旧的 READ/WRITE_EXTERNAL_STORAGE 在 targetSdk 33+ 无效
+                    android.Manifest.permission.READ_MEDIA_IMAGES,
+                    android.Manifest.permission.READ_MEDIA_VIDEO,
+            };
         }
+        // KSU 管理器只要 INTERNET / USE_BIOMETRIC / USE_FINGERPRINT，都是普通权限，
+        // 安装时自动授予，不需要 setGrantedRuntimePermissions。
+        return new String[0];
     }
 
     private boolean isInstalled(PackageManager pm, String pkg) {

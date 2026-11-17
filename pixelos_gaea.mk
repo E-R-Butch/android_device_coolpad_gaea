@@ -7,7 +7,7 @@
 # ---------------------------------------------------------------- 发版裁剪
 # 必须在 inherit-product 之前设置：handheld_product.mk / base_system.mk 用
 # ifeq ($(CUSTOM_BUILD),) 判断是否加入 AOSP 的 Camera2、LatinIME、su。
-# 本产品不用 AOSP Camera2（保留 Aperture），输入法用 LatinImeGoogle
+# 本产品不用 AOSP Camera2 也不用 Aperture（系统只留 GCam），输入法用 LatinImeGoogle
 # （包名同为 com.android.inputmethod.latin），故置为非空跳过这批 AOSP 包。
 CUSTOM_BUILD := gaea
 
@@ -65,17 +65,8 @@ PRODUCT_DEFAULT_DEV_CERTIFICATE := vendor/aosp-priv/keys/releasekey
 PRODUCT_EXTRA_RECOVERY_KEYS += vendor/aosp-priv/keys/releasekey
 TARGET_CALL_RECORDING_SUPPORTED := false
 
-# ---------------------------------------------------------------- 发版裁剪
-# 必须放在文件最末尾：PRODUCT_PACKAGES 在 inherit-product 里是延迟展开，
-# 放在继承之前用 := 求值会拿到不完整列表，filter-out 静默失效。
+# ---------------------------------------------------------------- 预装 App
 #
-# 裁剪项：
-#   gsi_skip_mount.cfg : 独立 product 分区，不需要 skip-mount 配置
-#   Drive / Maps       : 11-06 因 product 空间不足删除，用户从 Play 商店自装
-#   Camera2            : 保留 Aperture 作为唯一 STILL_IMAGE_CAMERA handler，避免选择器弹窗
-#                        （另由文件开头的 CUSTOM_BUILD 排除）
-#   Music              : AOSP 13 占位应用，无音乐库管理，用户用 Play Music 或本地播放器
-
 # GCam（BSG MGC 9.4.103 V41 snap）—— 走"预置包 + 首次启动安装"路线。
 #
 # 为什么不放 /system/app：
@@ -105,4 +96,21 @@ TARGET_CALL_RECORDING_SUPPORTED := false
 # PackageInstaller 不依赖后缀，getPackageArchiveInfo 直接按 zip 解析。
 PRODUCT_COPY_FILES += \
     device/coolpad/gaea/prebuilt-apps/GCam/GCam.apk:$(TARGET_COPY_OUT_SYSTEM)/preinstall/GCam.apk.bin
+# KernelSU-Next 管理器：内核通过扫 /data/app/*/base.apk 的 magic 识别 manager，
+# 官方明确不支持装进 /system/app 或 /system/priv-app（容易被检测），
+# 只能开机后经 PackageInstaller 装进 /data/app，和 GCam 走同一条路。
+PRODUCT_COPY_FILES += \
+    device/coolpad/gaea/prebuilt-apps/KernelSU/KernelSU_Next.apk.bin:$(TARGET_COPY_OUT_SYSTEM)/preinstall/KernelSU_Next.apk.bin
+# ---------------------------------------------------------------- 包裁剪
+#
+# 裁剪项：
+#   gsi_skip_mount.cfg : 独立 product 分区，不需要 skip-mount 配置
+#   Drive / Maps       : 11-06 因 product 空间不足删除，用户从 Play 商店自装
+#   Music              : AOSP 13 占位应用，无音乐库管理，用户用 Play Music 或本地播放器
+#
+# 注意：这里只能裁设备自己加的包。Aperture 来自 vendor/aosp/config/common_mobile.mk，
+# 在 mk 层 filter-out 不掉——PRODUCT_PACKAGES 里存的是 @inherit: 占位符
+# （build/make/core/node_fns.mk:109），且 product_config.mk 末尾有
+# readonly-product-vars 把变量锁成只读。Aperture 只能从 vendor 源头删，
+# 见 tools/apply-vendor-patches.sh。
 PRODUCT_PACKAGES := $(filter-out gsi_skip_mount.cfg Drive Maps Music,$(PRODUCT_PACKAGES))
